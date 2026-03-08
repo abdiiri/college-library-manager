@@ -46,6 +46,7 @@ const App = () => (
             <Route path="/members" element={<ProtectedRoute roles={["admin", "librarian"]}><MembersPage /></ProtectedRoute>} />
             <Route path="/transactions" element={<ProtectedRoute roles={["admin", "librarian"]}><TransactionsPage /></ProtectedRoute>} />
             <Route path="/reports" element={<ProtectedRoute roles={["admin", "librarian"]}><ReportsPage /></ProtectedRoute>} />
+            <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </LibraryProvider>
