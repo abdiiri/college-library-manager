@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, KeyRound } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MembersPage() {
@@ -16,6 +16,12 @@ export default function MembersPage() {
   const [editing, setEditing] = useState<Member | null>(null);
   const [form, setForm] = useState({ name: "", email: "", phone: "", member_id: "", type: "student", password: "" });
   const [saving, setSaving] = useState(false);
+
+  // Reset password state
+  const [resetDialogOpen, setResetDialogOpen] = useState(false);
+  const [resetMember, setResetMember] = useState<Member | null>(null);
+  const [newPassword, setNewPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
 
   const filtered = members.filter(
     (m) =>
@@ -36,6 +42,36 @@ export default function MembersPage() {
     setDialogOpen(true);
   };
 
+  const openResetPassword = (member: Member) => {
+    setResetMember(member);
+    setNewPassword("");
+    setResetDialogOpen(true);
+  };
+
+  const handleResetPassword = async () => {
+    if (!resetMember?.user_id) {
+      toast.error("This member has no linked account");
+      return;
+    }
+    if (newPassword.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    setResetting(true);
+    const { data, error } = await supabase.functions.invoke("reset-password", {
+      body: { user_id: resetMember.user_id, new_password: newPassword },
+    });
+
+    if (error || data?.error) {
+      toast.error(data?.error || error?.message || "Failed to reset password");
+    } else {
+      toast.success(`Password reset for ${resetMember.name}`);
+      setResetDialogOpen(false);
+    }
+    setResetting(false);
+  };
+
   const handleSave = async () => {
     if (!form.name || !form.member_id) {
       toast.error("Name and Member ID are required");
@@ -52,7 +88,6 @@ export default function MembersPage() {
       if (error) { toast.error("Failed to update"); setSaving(false); return; }
       toast.success("Member updated");
     } else {
-      // New member: create auth account via edge function
       if (!form.email || !form.password) {
         toast.error("Email and password are required for new members");
         setSaving(false);
@@ -159,6 +194,34 @@ export default function MembersPage() {
         </Dialog>
       </div>
 
+      {/* Reset Password Dialog */}
+      <Dialog open={resetDialogOpen} onOpenChange={setResetDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset Password</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 mt-4">
+            <p className="text-sm text-muted-foreground">
+              Set a new password for <strong>{resetMember?.name}</strong> ({resetMember?.email})
+            </p>
+            <div>
+              <Label>New Password</Label>
+              <Input
+                type="password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                className="mt-1"
+                placeholder="Min 6 characters"
+                minLength={6}
+              />
+            </div>
+            <Button onClick={handleResetPassword} className="w-full" disabled={resetting}>
+              {resetting ? "Resetting..." : "Reset Password"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <div className="mb-4 relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input placeholder="Search members..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
@@ -195,6 +258,11 @@ export default function MembersPage() {
                     <Button variant="ghost" size="icon" onClick={() => openEdit(m)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
+                    {m.user_id && (
+                      <Button variant="ghost" size="icon" onClick={() => openResetPassword(m)} title="Reset Password">
+                        <KeyRound className="h-4 w-4" />
+                      </Button>
+                    )}
                     <Button variant="ghost" size="icon" onClick={() => handleDelete(m.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
