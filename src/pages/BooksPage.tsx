@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLibrary, Book } from "@/context/LibraryContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,13 +9,13 @@ import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 export default function BooksPage() {
-  const { books, setBooks, user } = useLibrary();
+  const { books, refreshBooks, profile } = useLibrary();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Book | null>(null);
   const [form, setForm] = useState({ title: "", author: "", category: "", isbn: "", quantity: "1" });
 
-  const canManage = user?.role === "admin";
+  const canManage = profile?.role === "admin" || profile?.role === "librarian";
 
   const filtered = books.filter(
     (b) =>
@@ -35,7 +36,7 @@ export default function BooksPage() {
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!form.title || !form.author) {
       toast.error("Title and Author are required");
       return;
@@ -43,30 +44,29 @@ export default function BooksPage() {
     const qty = parseInt(form.quantity) || 1;
 
     if (editing) {
-      setBooks((prev) =>
-        prev.map((b) =>
-          b.id === editing.id
-            ? { ...b, ...form, quantity: qty, available: b.available + (qty - b.quantity) }
-            : b
-        )
-      );
+      const newAvailable = editing.available + (qty - editing.quantity);
+      const { error } = await supabase.from("books").update({
+        title: form.title, author: form.author, category: form.category,
+        isbn: form.isbn, quantity: qty, available: Math.max(0, newAvailable),
+      } as any).eq("id", editing.id);
+      if (error) { toast.error("Failed to update"); return; }
       toast.success("Book updated");
     } else {
-      const newBook: Book = {
-        id: String(Date.now()),
-        ...form,
-        quantity: qty,
-        available: qty,
-      };
-      setBooks((prev) => [...prev, newBook]);
+      const { error } = await supabase.from("books").insert({
+        title: form.title, author: form.author, category: form.category,
+        isbn: form.isbn, quantity: qty, available: qty,
+      } as any);
+      if (error) { toast.error("Failed to add"); return; }
       toast.success("Book added");
     }
+    await refreshBooks();
     setDialogOpen(false);
   };
 
-  const handleDelete = (id: string) => {
-    setBooks((prev) => prev.filter((b) => b.id !== id));
+  const handleDelete = async (id: string) => {
+    await supabase.from("books").delete().eq("id", id);
     toast.success("Book deleted");
+    await refreshBooks();
   };
 
   return (
@@ -122,12 +122,7 @@ export default function BooksPage() {
 
       <div className="mb-4 relative max-w-sm">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-        <Input
-          placeholder="Search by title, author, or category..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="pl-9"
-        />
+        <Input placeholder="Search by title, author, or category..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-9" />
       </div>
 
       <div className="bg-card rounded-lg border shadow-sm overflow-x-auto">

@@ -5,17 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
 export default function ReportsPage() {
-  const { books, transactions, members } = useLibrary();
+  const { books, transactions } = useLibrary();
   const [memberSearch, setMemberSearch] = useState("");
 
-  const borrowedTx = transactions.filter((t) => !t.returnDate);
-  const overdueTx = transactions.filter((t) => !t.returnDate && new Date(t.dueDate) < new Date());
+  const borrowedTx = transactions.filter((t) => !t.return_date);
+  const overdueTx = transactions.filter((t) => !t.return_date && new Date(t.due_date) < new Date());
 
   const filteredHistory = memberSearch
-    ? transactions.filter(
-        (t) =>
-          t.memberName.toLowerCase().includes(memberSearch.toLowerCase())
-      )
+    ? transactions.filter((t) => t.member_name.toLowerCase().includes(memberSearch.toLowerCase()))
     : transactions;
 
   return (
@@ -64,10 +61,10 @@ export default function ReportsPage() {
               <tbody>
                 {borrowedTx.map((tx) => (
                   <tr key={tx.id}>
-                    <td className="font-medium">{tx.memberName}</td>
-                    <td>{tx.bookTitle}</td>
-                    <td>{tx.issueDate}</td>
-                    <td>{tx.dueDate}</td>
+                    <td className="font-medium">{tx.member_name}</td>
+                    <td>{tx.book_title}</td>
+                    <td>{tx.issue_date}</td>
+                    <td>{tx.due_date}</td>
                   </tr>
                 ))}
                 {borrowedTx.length === 0 && (
@@ -86,13 +83,13 @@ export default function ReportsPage() {
               </thead>
               <tbody>
                 {overdueTx.map((tx) => {
-                  const days = Math.ceil((new Date().getTime() - new Date(tx.dueDate).getTime()) / (1000 * 60 * 60 * 24));
+                  const days = Math.ceil((new Date().getTime() - new Date(tx.due_date).getTime()) / (1000 * 60 * 60 * 24));
                   return (
                     <tr key={tx.id}>
-                      <td className="font-medium">{tx.memberName}</td>
-                      <td>{tx.bookTitle}</td>
-                      <td>{tx.issueDate}</td>
-                      <td>{tx.dueDate}</td>
+                      <td className="font-medium">{tx.member_name}</td>
+                      <td>{tx.book_title}</td>
+                      <td>{tx.issue_date}</td>
+                      <td>{tx.due_date}</td>
                       <td className="text-destructive font-semibold">{days} days</td>
                     </tr>
                   );
@@ -118,12 +115,12 @@ export default function ReportsPage() {
               <tbody>
                 {filteredHistory.map((tx) => (
                   <tr key={tx.id}>
-                    <td className="font-medium">{tx.memberName}</td>
-                    <td>{tx.bookTitle}</td>
-                    <td>{tx.issueDate}</td>
-                    <td>{tx.dueDate}</td>
-                    <td>{tx.returnDate || "—"}</td>
-                    <td>{tx.fine > 0 ? `$${tx.fine.toFixed(2)}` : "—"}</td>
+                    <td className="font-medium">{tx.member_name}</td>
+                    <td>{tx.book_title}</td>
+                    <td>{tx.issue_date}</td>
+                    <td>{tx.due_date}</td>
+                    <td>{tx.return_date || "—"}</td>
+                    <td>{tx.fine > 0 ? `$${Number(tx.fine).toFixed(2)}` : "—"}</td>
                     <td>
                       <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
                         tx.status === "returned" ? "bg-success/10 text-success" : tx.status === "overdue" ? "bg-destructive/10 text-destructive" : "bg-secondary/20 text-secondary-foreground"

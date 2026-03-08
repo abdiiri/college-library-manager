@@ -17,15 +17,17 @@ import { ReactNode } from "react";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children, roles }: { children: ReactNode; roles?: string[] }) {
-  const { user } = useLibrary();
-  if (!user) return <Navigate to="/" replace />;
-  if (roles && !roles.includes(user.role)) return <Navigate to="/dashboard" replace />;
+  const { session, profile, loading } = useLibrary();
+  if (loading) return <div className="flex items-center justify-center h-screen text-muted-foreground">Loading...</div>;
+  if (!session || !profile) return <Navigate to="/" replace />;
+  if (roles && !roles.includes(profile.role)) return <Navigate to="/dashboard" replace />;
   return <AppLayout>{children}</AppLayout>;
 }
 
 function LoginGuard() {
-  const { user } = useLibrary();
-  if (user) return <Navigate to="/dashboard" replace />;
+  const { session, profile, loading } = useLibrary();
+  if (loading) return <div className="flex items-center justify-center h-screen text-muted-foreground">Loading...</div>;
+  if (session && profile) return <Navigate to="/dashboard" replace />;
   return <LoginPage />;
 }
 
