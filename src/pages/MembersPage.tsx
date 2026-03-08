@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLibrary, Member } from "@/context/LibraryContext";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -9,63 +10,67 @@ import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { toast } from "sonner";
 
 export default function MembersPage() {
-  const { members, setMembers } = useLibrary();
+  const { members, refreshMembers } = useLibrary();
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Member | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", memberId: "", type: "student" as "student" | "staff" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", member_id: "", type: "student" });
 
   const filtered = members.filter(
     (m) =>
       m.name.toLowerCase().includes(search.toLowerCase()) ||
-      m.memberId.toLowerCase().includes(search.toLowerCase()) ||
+      m.member_id.toLowerCase().includes(search.toLowerCase()) ||
       m.email.toLowerCase().includes(search.toLowerCase())
   );
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ name: "", email: "", phone: "", memberId: "", type: "student" });
+    setForm({ name: "", email: "", phone: "", member_id: "", type: "student" });
     setDialogOpen(true);
   };
 
   const openEdit = (member: Member) => {
     setEditing(member);
-    setForm({ name: member.name, email: member.email, phone: member.phone, memberId: member.memberId, type: member.type });
+    setForm({ name: member.name, email: member.email, phone: member.phone, member_id: member.member_id, type: member.type });
     setDialogOpen(true);
   };
 
-  const handleSave = () => {
-    if (!form.name || !form.memberId) {
+  const handleSave = async () => {
+    if (!form.name || !form.member_id) {
       toast.error("Name and Member ID are required");
       return;
     }
 
     if (editing) {
-      setMembers((prev) =>
-        prev.map((m) => (m.id === editing.id ? { ...m, ...form } : m))
-      );
+      const { error } = await supabase.from("members").update({
+        name: form.name, email: form.email, phone: form.phone,
+        member_id: form.member_id, type: form.type,
+      } as any).eq("id", editing.id);
+      if (error) { toast.error("Failed to update"); return; }
       toast.success("Member updated");
     } else {
-      const newMember: Member = {
-        id: String(Date.now()),
-        ...form,
-        active: true,
-      };
-      setMembers((prev) => [...prev, newMember]);
+      const { error } = await supabase.from("members").insert({
+        name: form.name, email: form.email, phone: form.phone,
+        member_id: form.member_id, type: form.type, active: true,
+      } as any);
+      if (error) { toast.error(error.message); return; }
       toast.success("Member registered");
     }
+    await refreshMembers();
     setDialogOpen(false);
   };
 
-  const toggleActive = (id: string) => {
-    setMembers((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, active: !m.active } : m))
-    );
+  const toggleActive = async (id: string) => {
+    const member = members.find((m) => m.id === id);
+    if (!member) return;
+    await supabase.from("members").update({ active: !member.active } as any).eq("id", id);
+    await refreshMembers();
   };
 
-  const handleDelete = (id: string) => {
-    setMembers((prev) => prev.filter((m) => m.id !== id));
+  const handleDelete = async (id: string) => {
+    await supabase.from("members").delete().eq("id", id);
     toast.success("Member deleted");
+    await refreshMembers();
   };
 
   return (
@@ -89,7 +94,7 @@ export default function MembersPage() {
             <div className="space-y-4 mt-4">
               <div>
                 <Label>Member ID</Label>
-                <Input value={form.memberId} onChange={(e) => setForm({ ...form, memberId: e.target.value })} className="mt-1" placeholder="e.g. STU004" />
+                <Input value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} className="mt-1" placeholder="e.g. STU004" />
               </div>
               <div>
                 <Label>Full Name</Label>
@@ -105,10 +110,8 @@ export default function MembersPage() {
               </div>
               <div>
                 <Label>Type</Label>
-                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v as "student" | "staff" })}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue />
-                  </SelectTrigger>
+                <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="student">Student</SelectItem>
                     <SelectItem value="staff">Staff</SelectItem>
@@ -144,7 +147,7 @@ export default function MembersPage() {
           <tbody>
             {filtered.map((m) => (
               <tr key={m.id}>
-                <td className="font-mono text-xs">{m.memberId}</td>
+                <td className="font-mono text-xs">{m.member_id}</td>
                 <td className="font-medium">{m.name}</td>
                 <td>{m.email}</td>
                 <td>{m.phone}</td>
