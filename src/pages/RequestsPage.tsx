@@ -16,7 +16,7 @@ interface BookRequest {
   book_id: string;
   book_title: string;
   student_name: string;
-  reason: string;
+  quantity: number;
   status: string;
   review_note: string | null;
   created_at: string;
