@@ -28,6 +28,7 @@ export default function RequestsPage() {
   const [requests, setRequests] = useState<BookRequest[]>([]);
   const [selectedBook, setSelectedBook] = useState("");
   const [reason, setReason] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [reviewDialog, setReviewDialog] = useState<BookRequest | null>(null);
   const [reviewNote, setReviewNote] = useState("");
