@@ -14,16 +14,172 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      books: {
+        Row: {
+          author: string
+          available: number
+          category: string
+          created_at: string
+          id: string
+          isbn: string
+          quantity: number
+          title: string
+        }
+        Insert: {
+          author: string
+          available?: number
+          category?: string
+          created_at?: string
+          id?: string
+          isbn?: string
+          quantity?: number
+          title: string
+        }
+        Update: {
+          author?: string
+          available?: number
+          category?: string
+          created_at?: string
+          id?: string
+          isbn?: string
+          quantity?: number
+          title?: string
+        }
+        Relationships: []
+      }
+      members: {
+        Row: {
+          active: boolean
+          created_at: string
+          email: string
+          id: string
+          member_id: string
+          name: string
+          phone: string
+          type: string
+          user_id: string | null
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          member_id: string
+          name: string
+          phone?: string
+          type?: string
+          user_id?: string | null
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          member_id?: string
+          name?: string
+          phone?: string
+          type?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          full_name: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          full_name?: string
+          id: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          full_name?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          book_id: string
+          book_title: string
+          created_at: string
+          due_date: string
+          fine: number
+          id: string
+          issue_date: string
+          member_id: string
+          member_name: string
+          return_date: string | null
+          status: string
+        }
+        Insert: {
+          book_id: string
+          book_title: string
+          created_at?: string
+          due_date: string
+          fine?: number
+          id?: string
+          issue_date?: string
+          member_id: string
+          member_name: string
+          return_date?: string | null
+          status?: string
+        }
+        Update: {
+          book_id?: string
+          book_title?: string
+          created_at?: string
+          due_date?: string
+          fine?: number
+          id?: string
+          issue_date?: string
+          member_id?: string
+          member_name?: string
+          return_date?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "transactions_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "transactions_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: { _user_id: string }
+        Returns: Database["public"]["Enums"]["app_role"]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "librarian" | "student"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +306,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "librarian", "student"],
+    },
   },
 } as const
