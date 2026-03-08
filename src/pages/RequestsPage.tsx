@@ -77,6 +77,7 @@ export default function RequestsPage() {
       toast.success("Book request submitted!");
       setSelectedBook("");
       setReason("");
+      setQuantity(1);
       fetchRequests();
     }
     setSubmitting(false);
