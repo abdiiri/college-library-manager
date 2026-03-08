@@ -207,6 +207,7 @@ export default function RequestsPage() {
                   <tr key={req.id}>
                     {!isStudent && <td className="font-medium">{req.student_name}</td>}
                     <td className="font-medium">{req.book_title}</td>
+                    <td>{req.quantity}</td>
                     <td className="max-w-[200px] truncate" title={req.reason}>{req.reason}</td>
                     <td className="whitespace-nowrap">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td>
