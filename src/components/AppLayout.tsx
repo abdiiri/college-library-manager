@@ -9,6 +9,7 @@ import {
   FileText,
   LogOut,
   Library,
+  MessageSquare,
 } from "lucide-react";
 
 const navItems = [
