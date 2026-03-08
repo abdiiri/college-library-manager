@@ -56,6 +56,10 @@ export default function RequestsPage() {
     }
     const book = books.find((b) => b.id === selectedBook);
     if (!book || !profile) return;
+    if (quantity > book.available) {
+      toast.error(`Only ${book.available} copies available`);
+      return;
+    }
 
     setSubmitting(true);
     const { error } = await supabase.from("book_requests").insert({
@@ -64,6 +68,7 @@ export default function RequestsPage() {
       book_title: book.title,
       student_name: profile.full_name || "Student",
       reason: reason.trim(),
+      quantity,
     } as any);
 
     if (error) {
