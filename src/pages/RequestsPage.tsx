@@ -154,6 +154,17 @@ export default function RequestsPage() {
                 </Select>
               </div>
               <div>
+                <Label>Number of Books</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={selectedBook ? (books.find(b => b.id === selectedBook)?.available || 1) : 1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
                 <Label>Reason for Borrowing</Label>
                 <Textarea
                   value={reason}
