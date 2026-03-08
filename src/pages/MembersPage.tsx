@@ -135,6 +135,12 @@ export default function MembersPage() {
                 <Label>Phone</Label>
                 <Input value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} className="mt-1" />
               </div>
+              {!editing && (
+                <div>
+                  <Label>Password</Label>
+                  <Input type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} className="mt-1" placeholder="Login password (min 6 chars)" minLength={6} required />
+                </div>
+              )}
               <div>
                 <Label>Type</Label>
                 <Select value={form.type} onValueChange={(v) => setForm({ ...form, type: v })}>
@@ -145,8 +151,8 @@ export default function MembersPage() {
                   </SelectContent>
                 </Select>
               </div>
-              <Button onClick={handleSave} className="w-full">
-                {editing ? "Update Member" : "Register Member"}
+              <Button onClick={handleSave} className="w-full" disabled={saving}>
+                {saving ? "Please wait..." : editing ? "Update Member" : "Register Member"}
               </Button>
             </div>
           </DialogContent>
