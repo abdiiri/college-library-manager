@@ -14,6 +14,56 @@ export type Database = {
   }
   public: {
     Tables: {
+      book_requests: {
+        Row: {
+          book_id: string
+          book_title: string
+          created_at: string
+          id: string
+          reason: string
+          review_note: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: string
+          student_id: string
+          student_name: string
+        }
+        Insert: {
+          book_id: string
+          book_title: string
+          created_at?: string
+          id?: string
+          reason?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_id: string
+          student_name: string
+        }
+        Update: {
+          book_id?: string
+          book_title?: string
+          created_at?: string
+          id?: string
+          reason?: string
+          review_note?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: string
+          student_id?: string
+          student_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_requests_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       books: {
         Row: {
           author: string
