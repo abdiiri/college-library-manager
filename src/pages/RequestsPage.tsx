@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useLibrary } from "@/context/LibraryContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -16,6 +17,7 @@ interface BookRequest {
   book_title: string;
   student_name: string;
   reason: string;
+  quantity: number;
   status: string;
   review_note: string | null;
   created_at: string;
@@ -27,6 +29,7 @@ export default function RequestsPage() {
   const [requests, setRequests] = useState<BookRequest[]>([]);
   const [selectedBook, setSelectedBook] = useState("");
   const [reason, setReason] = useState("");
+  const [quantity, setQuantity] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [reviewDialog, setReviewDialog] = useState<BookRequest | null>(null);
   const [reviewNote, setReviewNote] = useState("");
@@ -48,12 +51,16 @@ export default function RequestsPage() {
   }, []);
 
   const handleSubmitRequest = async () => {
-    if (!selectedBook || !reason.trim()) {
-      toast.error("Please select a book and provide a reason");
+    if (!selectedBook || !reason.trim() || quantity < 1) {
+      toast.error("Please fill all fields correctly");
       return;
     }
     const book = books.find((b) => b.id === selectedBook);
     if (!book || !profile) return;
+    if (quantity > book.available) {
+      toast.error(`Only ${book.available} copies available`);
+      return;
+    }
 
     setSubmitting(true);
     const { error } = await supabase.from("book_requests").insert({
@@ -62,6 +69,7 @@ export default function RequestsPage() {
       book_title: book.title,
       student_name: profile.full_name || "Student",
       reason: reason.trim(),
+      quantity,
     } as any);
 
     if (error) {
@@ -70,6 +78,7 @@ export default function RequestsPage() {
       toast.success("Book request submitted!");
       setSelectedBook("");
       setReason("");
+      setQuantity(1);
       fetchRequests();
     }
     setSubmitting(false);
@@ -146,6 +155,17 @@ export default function RequestsPage() {
                 </Select>
               </div>
               <div>
+                <Label>Number of Books</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={selectedBook ? (books.find(b => b.id === selectedBook)?.available || 1) : 1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className="mt-1"
+                />
+              </div>
+              <div>
                 <Label>Reason for Borrowing</Label>
                 <Textarea
                   value={reason}
@@ -176,6 +196,7 @@ export default function RequestsPage() {
                 <tr>
                   {!isStudent && <th>Student</th>}
                   <th>Book</th>
+                  <th>Qty</th>
                   <th>Reason</th>
                   <th>Date</th>
                   <th>Status</th>
@@ -187,6 +208,7 @@ export default function RequestsPage() {
                   <tr key={req.id}>
                     {!isStudent && <td className="font-medium">{req.student_name}</td>}
                     <td className="font-medium">{req.book_title}</td>
+                    <td>{req.quantity}</td>
                     <td className="max-w-[200px] truncate" title={req.reason}>{req.reason}</td>
                     <td className="whitespace-nowrap">{new Date(req.created_at).toLocaleDateString()}</td>
                     <td>
