@@ -149,7 +149,7 @@ export default function MembersPage() {
               Register Member
             </Button>
           </DialogTrigger>
-          <DialogContent>
+          <DialogContent className="max-h-[85vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editing ? "Edit Member" : "Register New Member"}</DialogTitle>
             </DialogHeader>
