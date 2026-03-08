@@ -7,33 +7,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 export default function LoginPage() {
-  const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    if (isSignUp) {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName } },
-      });
-      if (error) {
-        toast.error(error.message);
-      } else {
-        toast.success("Account created! You can now sign in.");
-        setIsSignUp(false);
-      }
-    } else {
-      const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) {
-        toast.error(error.message);
-      }
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) {
+      toast.error(error.message);
     }
     setLoading(false);
   };
@@ -50,24 +33,9 @@ export default function LoginPage() {
         </div>
 
         <div className="bg-card rounded-lg border shadow-sm p-8">
-          <h2 className="font-heading text-xl font-bold mb-6 text-center">
-            {isSignUp ? "Create Account" : "Sign In"}
-          </h2>
+          <h2 className="font-heading text-xl font-bold mb-6 text-center">Sign In</h2>
 
           <form onSubmit={handleSubmit} className="space-y-4">
-            {isSignUp && (
-              <div>
-                <Label htmlFor="fullName">Full Name</Label>
-                <Input
-                  id="fullName"
-                  value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
-                  placeholder="Enter your full name"
-                  className="mt-1"
-                  required
-                />
-              </div>
-            )}
             <div>
               <Label htmlFor="email">Email</Label>
               <Input
@@ -95,22 +63,13 @@ export default function LoginPage() {
             </div>
 
             <Button type="submit" className="w-full" disabled={loading}>
-              {loading ? "Please wait..." : isSignUp ? "Sign Up" : "Sign In"}
+              {loading ? "Please wait..." : "Sign In"}
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-primary hover:underline"
-            >
-              {isSignUp ? "Already have an account? Sign In" : "Don't have an account? Sign Up"}
-            </button>
-          </div>
-
           <div className="mt-6 p-4 rounded-md bg-muted">
             <p className="text-xs text-muted-foreground">
-              New users are registered as <strong>Student</strong> by default. An admin can change your role after registration.
+              Your account is created by your librarian. Contact them if you don't have login credentials.
             </p>
           </div>
         </div>
