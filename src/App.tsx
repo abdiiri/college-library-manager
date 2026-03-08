@@ -11,6 +11,7 @@ import BooksPage from "@/pages/BooksPage";
 import MembersPage from "@/pages/MembersPage";
 import TransactionsPage from "@/pages/TransactionsPage";
 import ReportsPage from "@/pages/ReportsPage";
+import RequestsPage from "@/pages/RequestsPage";
 import NotFound from "@/pages/NotFound";
 import { ReactNode } from "react";
 
@@ -45,6 +46,7 @@ const App = () => (
             <Route path="/members" element={<ProtectedRoute roles={["admin", "librarian"]}><MembersPage /></ProtectedRoute>} />
             <Route path="/transactions" element={<ProtectedRoute roles={["admin", "librarian"]}><TransactionsPage /></ProtectedRoute>} />
             <Route path="/reports" element={<ProtectedRoute roles={["admin", "librarian"]}><ReportsPage /></ProtectedRoute>} />
+            <Route path="/requests" element={<ProtectedRoute><RequestsPage /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </LibraryProvider>

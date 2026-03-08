@@ -9,6 +9,7 @@ import {
   FileText,
   LogOut,
   Library,
+  MessageSquare,
 } from "lucide-react";
 
 const navItems = [
@@ -16,6 +17,7 @@ const navItems = [
   { to: "/books", label: "Books", icon: BookOpen, roles: ["admin", "librarian", "student"] },
   { to: "/members", label: "Members", icon: Users, roles: ["admin", "librarian"] },
   { to: "/transactions", label: "Borrow / Return", icon: ArrowLeftRight, roles: ["admin", "librarian"] },
+  { to: "/requests", label: "Book Requests", icon: MessageSquare, roles: ["admin", "librarian", "student"] },
   { to: "/reports", label: "Reports", icon: FileText, roles: ["admin", "librarian"] },
 ];
 
