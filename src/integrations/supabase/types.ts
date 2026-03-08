@@ -20,6 +20,7 @@ export type Database = {
           book_title: string
           created_at: string
           id: string
+          quantity: number
           reason: string
           review_note: string | null
           reviewed_at: string | null
@@ -33,6 +34,7 @@ export type Database = {
           book_title: string
           created_at?: string
           id?: string
+          quantity?: number
           reason?: string
           review_note?: string | null
           reviewed_at?: string | null
@@ -46,6 +48,7 @@ export type Database = {
           book_title?: string
           created_at?: string
           id?: string
+          quantity?: number
           reason?: string
           review_note?: string | null
           reviewed_at?: string | null
