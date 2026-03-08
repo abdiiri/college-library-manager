@@ -195,6 +195,7 @@ export default function RequestsPage() {
                 <tr>
                   {!isStudent && <th>Student</th>}
                   <th>Book</th>
+                  <th>Qty</th>
                   <th>Reason</th>
                   <th>Date</th>
                   <th>Status</th>
