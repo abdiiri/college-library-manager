@@ -50,8 +50,8 @@ export default function RequestsPage() {
   }, []);
 
   const handleSubmitRequest = async () => {
-    if (!selectedBook || !reason.trim()) {
-      toast.error("Please select a book and provide a reason");
+    if (!selectedBook || !reason.trim() || quantity < 1) {
+      toast.error("Please fill all fields correctly");
       return;
     }
     const book = books.find((b) => b.id === selectedBook);
