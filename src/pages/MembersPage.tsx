@@ -14,7 +14,8 @@ export default function MembersPage() {
   const [search, setSearch] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<Member | null>(null);
-  const [form, setForm] = useState({ name: "", email: "", phone: "", member_id: "", type: "student" });
+  const [form, setForm] = useState({ name: "", email: "", phone: "", member_id: "", type: "student", password: "" });
+  const [saving, setSaving] = useState(false);
 
   const filtered = members.filter(
     (m) =>
@@ -25,13 +26,13 @@ export default function MembersPage() {
 
   const openAdd = () => {
     setEditing(null);
-    setForm({ name: "", email: "", phone: "", member_id: "", type: "student" });
+    setForm({ name: "", email: "", phone: "", member_id: "", type: "student", password: "" });
     setDialogOpen(true);
   };
 
   const openEdit = (member: Member) => {
     setEditing(member);
-    setForm({ name: member.name, email: member.email, phone: member.phone, member_id: member.member_id, type: member.type });
+    setForm({ name: member.name, email: member.email, phone: member.phone, member_id: member.member_id, type: member.type, password: "" });
     setDialogOpen(true);
   };
 
@@ -41,23 +42,49 @@ export default function MembersPage() {
       return;
     }
 
+    setSaving(true);
+
     if (editing) {
       const { error } = await supabase.from("members").update({
         name: form.name, email: form.email, phone: form.phone,
         member_id: form.member_id, type: form.type,
       } as any).eq("id", editing.id);
-      if (error) { toast.error("Failed to update"); return; }
+      if (error) { toast.error("Failed to update"); setSaving(false); return; }
       toast.success("Member updated");
     } else {
-      const { error } = await supabase.from("members").insert({
-        name: form.name, email: form.email, phone: form.phone,
-        member_id: form.member_id, type: form.type, active: true,
-      } as any);
-      if (error) { toast.error(error.message); return; }
-      toast.success("Member registered");
+      // New member: create auth account via edge function
+      if (!form.email || !form.password) {
+        toast.error("Email and password are required for new members");
+        setSaving(false);
+        return;
+      }
+      if (form.password.length < 6) {
+        toast.error("Password must be at least 6 characters");
+        setSaving(false);
+        return;
+      }
+
+      const { data, error } = await supabase.functions.invoke("create-student", {
+        body: {
+          email: form.email,
+          password: form.password,
+          full_name: form.name,
+          member_id: form.member_id,
+          phone: form.phone,
+          type: form.type,
+        },
+      });
+
+      if (error || data?.error) {
+        toast.error(data?.error || error?.message || "Failed to create account");
+        setSaving(false);
+        return;
+      }
+      toast.success("Member registered with login credentials");
     }
     await refreshMembers();
     setDialogOpen(false);
+    setSaving(false);
   };
 
   const toggleActive = async (id: string) => {
