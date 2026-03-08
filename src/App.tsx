@@ -11,6 +11,7 @@ import BooksPage from "@/pages/BooksPage";
 import MembersPage from "@/pages/MembersPage";
 import TransactionsPage from "@/pages/TransactionsPage";
 import ReportsPage from "@/pages/ReportsPage";
+import RequestsPage from "@/pages/RequestsPage";
 import NotFound from "@/pages/NotFound";
 import { ReactNode } from "react";
 
