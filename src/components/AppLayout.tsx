@@ -35,7 +35,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
         <div className="flex items-center gap-3 px-6 py-5 border-b border-sidebar-border">
           <Library className="h-7 w-7 text-sidebar-primary" />
           <div>
-            <h1 className="font-heading text-lg font-bold text-sidebar-accent-foreground">LibraTrack</h1>
+            <h1 className="font-heading text-lg font-bold text-sidebar-accent-foreground">library Track</h1>
             <p className="text-xs text-sidebar-foreground/60">College Library</p>
           </div>
         </div>
